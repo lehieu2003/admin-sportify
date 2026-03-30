@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1db954;
+  --color-primary-hover: #1ed760;
+  --color-bg: #121212;
+  --color-panel: #181818;
+  --color-panel-alt: #282828;
+  --color-surface: #181818;
+  --color-card: #282828;
+  --color-border: #2a2a2a;
+  --color-text: #ffffff;
+  --color-muted: #b3b3b3;
+  --color-disabled: #535353;
+  --color-danger: #e22134;
+  --color-success: #1db954;
+  --color-warning: #ffa42b;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #121212;
+  color: #ffffff;
+  font-family: Inter, 'Segoe UI', Roboto, sans-serif;
+}
+
+:root {
+  --sportify-space-xs: 4px;
+  --sportify-space-sm: 8px;
+  --sportify-space-md: 16px;
+  --sportify-space-lg: 24px;
+  --sportify-space-xl: 32px;
+  --sportify-space-xxl: 40px;
+  --sportify-space-xxxl: 48px;
+}
+
+.type-display {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.type-heading {
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.type-subheading {
+  font-size: 18px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.type-body {
+  font-size: 14px;
+  font-weight: 400;
+  color: #b3b3b3;
+}
+
+.type-caption {
+  font-size: 12px;
+  font-weight: 300;
+  color: #535353;
+}
