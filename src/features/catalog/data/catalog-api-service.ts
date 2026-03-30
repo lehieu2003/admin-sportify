@@ -1,11 +1,35 @@
 import type { AxiosInstance } from 'axios'
 
+export type CatalogListResponse<T> = {
+  items: T[]
+  nextCursor: string | null
+  totalApprox?: number
+}
+
+export type CatalogQueryParams = {
+  query?: string
+  limit?: number
+  cursor?: string | null
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+export type UploadedImage = {
+  url: string
+  path: string
+  filename: string
+  mimetype: string
+  size: number
+}
+
 export type ArtistItem = {
   id: string
   name: string
   bio: string | null
   image_url: string | null
   popularity_score: number
+  created_at: string
+  updated_at: string
 }
 
 export type AlbumItem = {
@@ -16,6 +40,8 @@ export type AlbumItem = {
   release_date: string
   cover_url: string | null
   album_type: 'album' | 'single' | 'ep'
+  created_at: string
+  updated_at: string
 }
 
 export type TrackItem = {
@@ -31,6 +57,8 @@ export type TrackItem = {
   audio_url: string | null
   explicit: boolean
   popularity_score: number
+  created_at: string
+  updated_at: string
 }
 
 export type ArtistPayload = {
@@ -61,9 +89,17 @@ export type TrackPayload = {
 }
 
 export const catalogApiService = {
-  listArtists(client: AxiosInstance, query: string, limit = 50) {
+  listArtists(client: AxiosInstance, params: CatalogQueryParams) {
     return client
-      .get<ArtistItem[]>('/admin/artists', { params: { query: query || undefined, limit } })
+      .get<CatalogListResponse<ArtistItem>>('/admin/artists', {
+        params: {
+          query: params.query || undefined,
+          limit: params.limit ?? 20,
+          cursor: params.cursor || undefined,
+          sortBy: params.sortBy || undefined,
+          sortOrder: params.sortOrder || undefined,
+        },
+      })
       .then((res) => res.data)
   },
   createArtist(client: AxiosInstance, payload: ArtistPayload) {
@@ -76,9 +112,17 @@ export const catalogApiService = {
     return client.delete(`/admin/artists/${artistId}`).then((res) => res.data)
   },
 
-  listAlbums(client: AxiosInstance, query: string, limit = 50) {
+  listAlbums(client: AxiosInstance, params: CatalogQueryParams) {
     return client
-      .get<AlbumItem[]>('/admin/albums', { params: { query: query || undefined, limit } })
+      .get<CatalogListResponse<AlbumItem>>('/admin/albums', {
+        params: {
+          query: params.query || undefined,
+          limit: params.limit ?? 20,
+          cursor: params.cursor || undefined,
+          sortBy: params.sortBy || undefined,
+          sortOrder: params.sortOrder || undefined,
+        },
+      })
       .then((res) => res.data)
   },
   createAlbum(client: AxiosInstance, payload: AlbumPayload) {
@@ -91,9 +135,17 @@ export const catalogApiService = {
     return client.delete(`/admin/albums/${albumId}`).then((res) => res.data)
   },
 
-  listTracks(client: AxiosInstance, query: string, limit = 50) {
+  listTracks(client: AxiosInstance, params: CatalogQueryParams) {
     return client
-      .get<TrackItem[]>('/admin/tracks', { params: { query: query || undefined, limit } })
+      .get<CatalogListResponse<TrackItem>>('/admin/tracks', {
+        params: {
+          query: params.query || undefined,
+          limit: params.limit ?? 20,
+          cursor: params.cursor || undefined,
+          sortBy: params.sortBy || undefined,
+          sortOrder: params.sortOrder || undefined,
+        },
+      })
       .then((res) => res.data)
   },
   createTrack(client: AxiosInstance, payload: TrackPayload) {
@@ -104,5 +156,16 @@ export const catalogApiService = {
   },
   deleteTrack(client: AxiosInstance, trackId: string) {
     return client.delete(`/admin/tracks/${trackId}`).then((res) => res.data)
+  },
+  uploadImage(client: AxiosInstance, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return client
+      .post<UploadedImage>('/admin/uploads/image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((res) => res.data)
   },
 }
