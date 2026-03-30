@@ -22,6 +22,14 @@ export type UploadedImage = {
   size: number
 }
 
+export type UploadedAudio = {
+  url: string
+  path: string
+  filename: string
+  mimetype: string
+  size: number
+}
+
 export type ArtistItem = {
   id: string
   name: string
@@ -162,6 +170,17 @@ export const catalogApiService = {
     formData.append('file', file)
     return client
       .post<UploadedImage>('/admin/uploads/image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((res) => res.data)
+  },
+  uploadAudio(client: AxiosInstance, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return client
+      .post<UploadedAudio>('/admin/uploads/audio', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

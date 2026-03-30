@@ -164,6 +164,14 @@ export function CatalogPage() {
     [authorizedClient],
   )
 
+  const uploadAudio = useCallback(
+    async (file: File) => {
+      const result = await catalogApiService.uploadAudio(authorizedClient, file)
+      return result.url
+    },
+    [authorizedClient],
+  )
+
   const artistsQuery = useInfiniteQuery({
     queryKey: ['admin-catalog', 'artists', baseParams],
     queryFn: ({ pageParam }) =>
@@ -468,6 +476,7 @@ export function CatalogPage() {
           }}
           isSubmitting={createTrack.isPending || updateTrack.isPending}
           uploadImage={uploadImage}
+          uploadAudio={uploadAudio}
         />
       ) : null}
 
@@ -863,6 +872,7 @@ function TrackModal({
   onSubmit,
   isSubmitting,
   uploadImage,
+  uploadAudio,
 }: {
   mode: ModalMode
   item?: TrackItem
@@ -870,9 +880,12 @@ function TrackModal({
   onSubmit: (payload: TrackPayload) => void
   isSubmitting: boolean
   uploadImage: (file: File) => Promise<string>
+  uploadAudio: (file: File) => Promise<string>
 }) {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false)
+  const [audioUploadError, setAudioUploadError] = useState<string | null>(null)
   const form = useForm<TrackFormValues>({
     defaultValues: {
       artistId: item?.artist_id || '',
@@ -887,6 +900,7 @@ function TrackModal({
     },
   })
   const coverUrl = form.watch('coverUrl')
+  const audioUrl = form.watch('audioUrl')
 
   const submit = form.handleSubmit((values) => {
     const parsed = trackSchema.safeParse(values)
@@ -941,6 +955,37 @@ function TrackModal({
           {coverUrl ? <ImageThumb src={coverUrl} alt="Track preview" /> : null}
         </div>
         <Input placeholder="Audio URL" {...form.register('audioUrl')} />
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept=".mp3,audio/mpeg"
+              className="w-full rounded-md border border-border bg-panel px-3 py-2 text-sm text-white file:mr-3 file:rounded file:border-0 file:bg-panel-alt file:px-3 file:py-1 file:text-sm file:text-white"
+              onChange={async (event) => {
+                const file = event.target.files?.[0]
+                if (!file) return
+                setAudioUploadError(null)
+                setIsUploadingAudio(true)
+                try {
+                  const uploadedUrl = await uploadAudio(file)
+                  form.setValue('audioUrl', uploadedUrl, { shouldDirty: true, shouldTouch: true })
+                } catch (error) {
+                  setAudioUploadError(toApiError(error).message)
+                } finally {
+                  setIsUploadingAudio(false)
+                  event.target.value = ''
+                }
+              }}
+            />
+            {isUploadingAudio ? <span className="text-xs text-muted">Uploading...</span> : null}
+          </div>
+          {audioUploadError ? <p className="text-xs text-danger">{audioUploadError}</p> : null}
+          {audioUrl ? (
+            <p className="text-xs text-muted">
+              Uploaded audio URL: <span className="font-mono">{audioUrl}</span>
+            </p>
+          ) : null}
+        </div>
         <Input
           type="number"
           placeholder="Popularity 0-100"
@@ -954,7 +999,7 @@ function TrackModal({
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting || isUploading}>
+          <Button type="submit" disabled={isSubmitting || isUploading || isUploadingAudio}>
             {isSubmitting ? 'Saving...' : 'Save'}
           </Button>
         </div>
